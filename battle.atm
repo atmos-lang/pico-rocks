@@ -5,19 +5,19 @@ require "ts" ;; task prototypes for Ship, Shot, Meteor
 val V = @{
     l = @{                          ;; left ship
         tag = :L,
-        pos = PP(10, 50),           ;; x,y initial position
+        pos = pico.pos(10, 50),     ;; x,y initial position
         ctl = @{                    ;; key controls
             move  = @{ l='A', r='D', u='W', d='S'},
             frame = @{ l=0, r=1, u=2, d=3 },
             shot  = 'Left Shift',
         },
         lim = @{ x1=0, x2=W/2 },    ;; x limits (half of screen)
-        shot = @{ tag=:l, x=1 },   ;; shot tag, x direction
+        shot = @{ tag=:l, x=1 },    ;; shot tag, x direction
         img = "imgs/ship-L.gif",    ;; ship image
     },
     r = @{
         tag = :R,
-        pos = PP(90, 50),
+        pos = pico.pos(90, 50),
         ctl = @{
             move = @{ l='Left', r='Right', u='Up', d='Down' },
             frame = @{ l=1, r=0, u=2, d=3 },
