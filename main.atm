@@ -74,33 +74,21 @@ loop {
     ;; spawns the actual battle
     pin battle = spawn Battle()
 
-await(false)
-
     ;; Pause with 'P':
     ;;  * awaits 'P' to toggle battle off
     ;;  * shows a "paused" image
     ;;  * awaits 'P' to toggle battle on
     spawn {
         loop {
-            await(SDL.event.KeyDown, 'P')
+            await(:key.dn, 'P')
             toggle battle(false)
             spawn {
-                val sfc = IMG.load("imgs/pause.png") --> assert
-                val tex = REN::createTextureFromSurface(sfc) --> assert
-                val pt = PP(50, 50)
-                val r = @{
-                    x = (pt.x - (w/2)),
-                    y = (pt.y - (h/2)),
-                    w = w,
-                    h = h,
-                } where {
-                    w,h = sfc::getSize()
-                }
-                every :sdl.draw {
-                    REN::copy(tex, nil, sdl.ints(r))
+                val pt = pico.pos(50, 50)
+                every :draw {
+                    pico.output.draw.image(pt, "imgs/pause.png")
                 }
             }
-            await(SDL.event.KeyDown, 'P')
+            await(:key.dn, 'P')
             toggle battle(true)
         }
     }

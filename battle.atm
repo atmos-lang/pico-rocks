@@ -92,7 +92,7 @@ func Battle () {
                             ((t1.pub.tag==:l) && (t2.pub.tag==:L)) ||
                             ((t1.pub.tag==:M) && (t2.pub.tag==:M))
                         )
-                        if (!no) && rect_vs_rect(t1.pub.rect, t2.pub.rect) {
+                        if (!no) && pico.vs.rect_rect(t1.pub.rect, t2.pub.rect) {
                             emit [t1] :collided ;; will terminate t1
                             emit [t2] :collided ;; will terminate t2
                         }
@@ -102,7 +102,7 @@ func Battle () {
         }
     }
 
-    sdl.play "snds/explosion.wav"
+    pico.output.sound "snds/explosion.wav"
 
     ;;;
     ;; Returns the winner index to the main game loop:

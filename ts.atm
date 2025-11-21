@@ -1,8 +1,8 @@
 val SHIP_FRAMES     = 4
 val SHIP_ACC_DIV    = 10
 val SHIP_VEL_MAX    = @{ x=W/2.5, y=H/2.5 }
-val SHOT_DIM        = @{ w=W/50, h=H/100 }
-val SHOT_COLOR      = 0xFFFF88
+val SHOT_DIM        = @{ x=W/50, y=H/100 }
+val SHOT_COLOR      = @{ r=0xFF, g=0xFF, b=0x88 }
 val METEOR_FRAMES   = 6
 val METEOR_AWAIT    = 5000
 
@@ -43,19 +43,17 @@ func Move_T (rect, vel) {
 }
 
 func Meteor () {
-    val sfc = IMG.load("imgs/meteor.gif") --> assert
-    val tex = REN::createTextureFromSurface(sfc) --> assert
-    val ww,h = sfc::getSize()
+    val dim = pico.get.size.image("imgs/meteor.gif")
 
     val y_sig = random_signal()
 
     val vx = (1 + (math.random(0,W/5))) * random_signal()
     val vy = (1 + (math.random(0,H/5))) * y_sig
 
-    val w = ww / METEOR_FRAMES
+    val w = dim.x / METEOR_FRAMES
     var dx = 0
 
-    val rect = @{ x=x, y=y, w=w, h=h } where {
+    val rect = @{ x=x, y=y, w=w, h=dim.y } where {
         x = math.random(0,W)
         y = if y_sig==1 => 0 => H
     }
@@ -71,26 +69,27 @@ func Meteor () {
             await Move_T(rect, @{x=vx,y=vy})
         } with {
             await :collided
-            sdl.play "snds/meteor.wav"
+            pico.output.sound "snds/meteor.wav"
         }
     } with {
-        every :sdl.draw {
-            val crop = @{ x=dx, y=0, w=w, h=h }
-            REN::copy(tex, crop, sdl.ints(rect))
+        every :draw {
+            pico.zet.crop @{ x=dx, y=0, w=w, h=dim.y }
+            pico.output.draw.image(rect, "imgs/meteor.gif")
+            pico.zet.crop()
         }
     } with {
         val v = ((vx->math.pow(2)) + (vy->math.pow(2))) --> math.pow(1/2)
         var x = 0
         every _,ms in :clock {
             set x = x + ((v * ms) / 1000)
-            set dx = (x % ww) - (x % w)
+            set dx = (x % dim.x) - (x % w)
         }
     }
 }
 
 func Shot (V, pos, vy) {
-    sdl.play "snds/shot.wav"
-    val rect = @{ x=pos.x+((V.x*SHOT_DIM.w)/2), y=(pos.y-(SHOT_DIM.h/2)), w=SHOT_DIM.w, h=SHOT_DIM.h }
+    pico.output.sound "snds/shot.wav"
+    val rect = @{ x=pos.x, y=pos.y, w=SHOT_DIM.x, h=SHOT_DIM.y }
     set pub = @{
         tag  = V.tag,
         rect = rect,
@@ -100,20 +99,18 @@ func Shot (V, pos, vy) {
     } with {
         await Move_T(rect, @{x=(W/3)*V.x, y=vy})
     } with {
-        every :sdl.draw {
-            REN::setDrawColor(SHOT_COLOR)
-            REN::fillRect(sdl.ints(rect))
+        every :draw {
+            pico.zet.color.draw(SHOT_COLOR)
+            pico.output.draw.rect(rect)
         }
     }
 }
 
 func Ship (V, shots) {
-    val sfc = IMG.load(V.img) --> assert
-    val tex = REN::createTextureFromSurface(sfc) --> assert
-    val w,h = sfc::getSize()
+    val dim = pico.get.size.image(V.img)
     val vel = @{x=0,y=0}
-    val dy = h / SHIP_FRAMES
-    val rect = @{ x=V.pos.x-(w/2), y=V.pos.y-(dy/2), w=w, h=dy }
+    val dy = dim.y / SHIP_FRAMES
+    val rect = @{ x=V.pos.x, y=V.pos.y, w=dim.x, h=dy }
 
     set pub = @{
         tag  = V.tag,
@@ -124,18 +121,18 @@ func Ship (V, shots) {
     var key
     spawn {
         par {
-            every it in SDL.event.KeyDown {
-                match it.name {
-                    V.ctl.shot   => spawn [shots] Shot(V.shot, @{x=rect.x+(rect.w/2),y=rect.y+(rect.h/2)}, vel.y)
+            every it in :key.dn {
+                match it.key {
+                    V.ctl.shot   => spawn [shots] Shot(V.shot, @{x=rect.x,y=rect.y}, vel.y)
                     V.ctl.move.l => set acc.x = -W/SHIP_ACC_DIV
                     V.ctl.move.r => set acc.x =  W/SHIP_ACC_DIV
                     V.ctl.move.u => set acc.y = -H/SHIP_ACC_DIV
                     V.ctl.move.d => set acc.y =  H/SHIP_ACC_DIV
                 }
-                set key = it.name
+                set key = it.key
             }
         } with {
-            every SDL.event.KeyUp {
+            every :key.up {
                 set key = nil
                 set acc = @{x=0,y=0}
             }
@@ -144,7 +141,7 @@ func Ship (V, shots) {
 
     watching :collided {
         par {
-            every :sdl.draw {
+            every :draw {
                 val frame = match key {
                     V.ctl.move.l => V.ctl.frame.l
                     V.ctl.move.r => V.ctl.frame.r
@@ -152,8 +149,9 @@ func Ship (V, shots) {
                     V.ctl.move.d => V.ctl.frame.d
                     else => 0
                 }
-                val crop = @{ x=0, y=frame*dy, w=rect.w, h=dy }
-                REN::copy(tex, crop, sdl.ints(rect))
+                pico.zet.crop @{ x=0, y=frame*dy, w=rect.w, h=dy }
+                pico.output.draw.image(rect, V.img)
+                pico.zet.crop()
             }
         } with {
             every _,ms in :clock {
@@ -163,7 +161,7 @@ func Ship (V, shots) {
 
                 val x = rect.x + (vel.x*dt)
                 val y = rect.y + (vel.y*dt)
-                set rect.x = between(V.lim.x1, x, V.lim.x2-w)
+                set rect.x = between(V.lim.x1, x, V.lim.x2-dim.x)
                 set rect.y = between(0, y, H-dy)
             }
         }
@@ -173,12 +171,12 @@ func Ship (V, shots) {
         var d = dy / 2;
         par {
             every _,ms in :clock {
-                set d = d + (((10*d)*ms)/1000)
+                set d = d + (((15*d)*ms)/1000)
             }
         } with {
-            every :sdl.draw {
-                REN::setDrawColor(0xFF0000)
-                REN::fillRect(sdl.ints @{ x=rect.x, y=rect.y, w=d, h=d })
+            every :draw {
+                pico.zet.color.draw(pico.color.red)
+                pico.output.draw.oval @{ x=rect.x, y=rect.y, w=d, h=d }
             }
         }
     }
