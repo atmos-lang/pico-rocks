@@ -3,8 +3,10 @@ set pico = require "pico"
 
 set W, H = (640, 480)
 
+pico.zet.expert(true)
 pico.zet.title "The Battle of Ships"
-pico.zet.size.window(W, H)
+pico.zet.dim.window(W, H)
+pico.zet.dim.world(W, H)
 pico.zet.font(nil, H/15)
 
 math.randomseed()

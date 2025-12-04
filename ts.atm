@@ -43,7 +43,7 @@ func Move_T (rect, vel) {
 }
 
 func Meteor () {
-    val dim = pico.get.size.image("imgs/meteor.gif")
+    val dim = pico.get.dim.image("imgs/meteor.gif")
 
     val y_sig = random_signal()
 
@@ -107,7 +107,7 @@ func Shot (V, pos, vy) {
 }
 
 func Ship (V, shots) {
-    val dim = pico.get.size.image(V.img)
+    val dim = pico.get.dim.image(V.img)
     val vel = @{x=0,y=0}
     val dy = dim.y / SHIP_FRAMES
     val rect = @{ x=V.pos.x, y=V.pos.y, w=dim.x, h=dy }
