@@ -3,11 +3,9 @@ set pico = require "pico"
 
 set W, H = (640, 480)
 
-pico.zet.expert(true)
 pico.zet.title "The Battle of Ships"
-pico.zet.dim.window(W, H)
-pico.zet.dim.world(W, H)
-pico.zet.font(nil, H/15)
+val dim = @{w=640,h=480}
+pico.zet.view @{ grid=false, window=dim, world=dim }
 
 math.randomseed()
 
@@ -18,9 +16,9 @@ spawn {    ;; BACKGROUND
     ;; This task is the first to spawn, which makes the background image to
     ;; always be rendered first.
     ;;;
-    val pt = pico.pos(50, 50)
+    val p = @{ 'C', x=0.5, y=0.5 }
     every :draw {
-        pico.output.draw.image(pt, "imgs/bg.png")
+        pico.output.draw.image("imgs/bg.png", p)
     }
 }
 
@@ -34,12 +32,12 @@ spawn {    ;; POINTS
     ;; Since points must outlive each individual battle, we spawn them here,
     ;; outside the main game loop.
     ;;;
-    val l = pico.pos(10, 90)
-    val r = pico.pos(90, 90)
+    val l = @{ 'C', x=0.1, y=0.9, h=0.075 }
+    val r = @{ 'C', x=0.9, y=0.9, h=0.075 }
     every :draw {
-        pico.zet.color.draw(pico.color.white)
-        pico.output.draw.text(l, points.L)
-        pico.output.draw.text(r, points.R)
+        pico.zet.color.draw "white"
+        pico.output.draw.text(points.L, l)
+        pico.output.draw.text(points.R, r)
     }
 }
 
@@ -59,10 +57,10 @@ loop {
         loop {
             ;; 500ms on
             watching @.500 {
-                val pt = pico.pos(50, 50)
+                val p = @{ 'C', x=0.5, y=0.5, h=0.075 }
                 every :draw {
-                    pico.zet.color.draw(pico.color.white)
-                    pico.output.draw.text(pt, "= PRESS ENTER TO START =")
+                    pico.zet.color.draw "white"
+                    pico.output.draw.text("= PRESS ENTER TO START =", p)
                 }
             }
             ;; 500ms off
@@ -85,9 +83,9 @@ loop {
             await(:key.dn, 'P')
             toggle battle(false)
             spawn {
-                val pt = pico.pos(50, 50)
+                val p = @{ 'C', x=0.5, y=0.5 }
                 every :draw {
-                    pico.output.draw.image(pt, "imgs/pause.png")
+                    pico.output.draw.image("imgs/pause.png", p)
                 }
             }
             await(:key.dn, 'P')
