@@ -4,8 +4,8 @@ set pico = require "pico"
 set W, H = (640, 480)
 
 pico.zet.title "The Battle of Ships"
-val dim = @{w=640,h=480}
-pico.zet.view @{ grid=false, window=dim, world=dim }
+val dim = @{'!',w=640,h=480}
+pico.zet.view @{ window=dim, world=dim }
 
 math.randomseed()
 
@@ -16,7 +16,7 @@ spawn {    ;; BACKGROUND
     ;; This task is the first to spawn, which makes the background image to
     ;; always be rendered first.
     ;;;
-    val p = @{ 'C', x=0.5, y=0.5 }
+    val p = @{ '%', x=0.5, y=0.5 }
     every :draw {
         pico.output.draw.image("imgs/bg.png", p)
     }
@@ -32,8 +32,8 @@ spawn {    ;; POINTS
     ;; Since points must outlive each individual battle, we spawn them here,
     ;; outside the main game loop.
     ;;;
-    val l = @{ 'C', x=0.1, y=0.9, h=0.075 }
-    val r = @{ 'C', x=0.9, y=0.9, h=0.075 }
+    val l = @{ '%', x=0.1, y=0.9, h=0.075 }
+    val r = @{ '%', x=0.9, y=0.9, h=0.075 }
     every :draw {
         pico.zet.color.draw "white"
         pico.output.draw.text(points.L, l)
@@ -57,7 +57,7 @@ loop {
         loop {
             ;; 500ms on
             watching @.500 {
-                val p = @{ 'C', x=0.5, y=0.5, h=0.075 }
+                val p = @{ '%', x=0.5, y=0.5, h=0.075 }
                 every :draw {
                     pico.zet.color.draw "white"
                     pico.output.draw.text("= PRESS ENTER TO START =", p)
@@ -83,7 +83,7 @@ loop {
             await(:key.dn, 'P')
             toggle battle(false)
             spawn {
-                val p = @{ 'C', x=0.5, y=0.5 }
+                val p = @{ '%', x=0.5, y=0.5 }
                 every :draw {
                     pico.output.draw.image("imgs/pause.png", p)
                 }

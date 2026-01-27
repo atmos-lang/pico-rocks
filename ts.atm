@@ -52,7 +52,7 @@ func Meteor () {
     val w = dim.w / METEOR_FRAMES
     var dx = 0
 
-    val rect = @{ 'C', x=x, y=y, w=0.075, h=0.075 } where {
+    val rect = @{ '%', x=x, y=y, w=0.075, h=0.075 } where {
         x = math.random()
         y = if y_sig==1 => 0 => 1
     }
@@ -89,7 +89,7 @@ func Meteor () {
 
 func Shot (V, pos, vy) {
     pico.output.sound "snds/shot.wav"
-    val rect = @{ 'C', x=pos.x, y=pos.y, w=0.02, h=0.01 }
+    val rect = @{ '%', x=pos.x, y=pos.y, w=0.02, h=0.01 }
     set pub = @{
         tag  = V.tag,
         rect = rect,
@@ -110,7 +110,7 @@ func Ship (V, shots) {
     val dim = pico.get.image(V.img)
     val vel = @{x=0,y=0}
     val dh = dim.h / SHIP_FRAMES
-    val rect = @{ 'C', x=V.pos, y=0.5, w=0.075, h=0.075 }
+    val rect = @{ '%', x=V.pos, y=0.5, w=0.075, h=0.075 }
 
     set pub = @{
         tag  = V.tag,
@@ -177,7 +177,7 @@ func Ship (V, shots) {
         } with {
             every :draw {
                 pico.zet.color.draw "red"
-                pico.output.draw.oval @{ 'C', x=rect.x, y=rect.y, w=d, h=d }
+                pico.output.draw.oval @{ '%', x=rect.x, y=rect.y, w=d, h=d }
             }
         }
     }
