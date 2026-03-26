@@ -2,13 +2,23 @@
 
 A spaceship shooter game for 2 simultaneous players.
 
+Built with [Atmos][atmos] and [atmos-env-pico][env-pico].
+
+[atmos]:    https://github.com/atmos-lang/atmos/
+[env-pico]: https://github.com/lua-atmos/env-pico/
+
+# Install
+
+```
+sudo luarocks --lua-version=5.4 install atmos-lang 0.6
+sudo luarocks --lua-version=5.4 install atmos-env-pico 0.1
+```
+
 # Run
 
 ```
-sudo luarocks --lua-version=5.4 install pico-sdl 0.2
-sudo luarocks --lua-version=5.4 install atmos-lang 0.5
-git checkout v0.4
-atmos main.lua
+git checkout v0.6
+atmos main.atm
 ```
 
 # Instructions
