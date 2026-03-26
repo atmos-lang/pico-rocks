@@ -3,9 +3,8 @@ set pico = require "pico"
 
 set W, H = (640, 480)
 
-pico.zet.title "The Battle of Ships"
-val dim = @{'!',w=640,h=480}
-pico.zet.view @{ window=dim, world=dim }
+pico.zet.window @{ title="The Battle of Ships" }
+pico.zet.dim @{'!', w=640, h=480}
 
 math.randomseed()
 

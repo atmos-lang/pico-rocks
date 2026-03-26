@@ -41,16 +41,19 @@ func Move_T (rect, vel) {
     }
 }
 
-func Meteor () {
-    val dim = pico.get.image("imgs/meteor.gif")
+val meteors = pico.layer.images (
+    "meteor",
+    "imgs/meteor.gif",
+    @{'#', w=METEOR_FRAMES, h=1}
+)
 
+func Meteor () {
     val y_sig = random_signal()
 
     val vx = (math.random()/5) * random_signal()
     val vy = (math.random()/5) * y_sig
 
-    val w = dim.w / METEOR_FRAMES
-    var dx = 0
+    var frame = 1
 
     val rect = @{ '%', x=x, y=y, w=0.075, h=0.075 } where {
         x = math.random()
@@ -72,17 +75,14 @@ func Meteor () {
         }
     } with {
         every :draw {
-            pico.zet.crop @{ x=dx, y=0, w=w, h=dim.h }
-            pico.output.draw.image("imgs/meteor.gif", rect)
-            pico.zet.crop()
+            pico.output.draw.layer(meteors[frame], rect)
         }
     } with {
         val v = ((vx->math.pow(2)) + (vy->math.pow(2))) --> math.pow(1/2)
         var x = 0
         every _,ms in :clock {
             set x = x + (v * ms)
-            val xx = x // 1
-            set dx = (xx % dim.w) - (xx % w)
+            set frame = ((x//50) % METEOR_FRAMES) + 1
         }
     }
 }
@@ -106,10 +106,22 @@ func Shot (V, pos, vy) {
     }
 }
 
+val ships = @{
+    ["imgs/ship-L.gif"] = pico.layer.images (
+        "imgs/ship-L.gif",
+        "imgs/ship-L.gif",
+        @{'#', w=1, h=SHIP_FRAMES}
+    ),
+    ["imgs/ship-R.gif"] = pico.layer.images (
+        "imgs/ship-R.gif",
+        "imgs/ship-R.gif",
+        @{'#', w=1, h=SHIP_FRAMES}
+    ),
+}
+
 func Ship (V, shots) {
-    val dim = pico.get.image(V.img)
+    val frames = ships[V.img]
     val vel = @{x=0,y=0}
-    val dh = dim.h / SHIP_FRAMES
     val rect = @{ '%', x=V.pos, y=0.5, w=0.075, h=0.075 }
 
     set pub = @{
@@ -149,12 +161,10 @@ func Ship (V, shots) {
                     V.ctl.move.d => V.ctl.frame.d
                     else => 0
                 }
-                pico.zet.crop @{ x=0, y=frame*dh, w=dim.w, h=dh }
-                pico.output.draw.image(V.img, rect)
-                pico.zet.crop()
+                pico.output.draw.layer(frames[frame+1], rect)
             }
         } with {
-            val H = pico.get.view().world.h
+            val H = pico.get.view().dim.h
             every _,ms in :clock {
                 val dt = ms / 1000
                 set vel.x = between(-SHIP_VEL_MAX.x, vel.x+(acc.x*dt), SHIP_VEL_MAX.x)
