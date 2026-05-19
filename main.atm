@@ -34,7 +34,7 @@ spawn {    ;; POINTS
     val l = @{ '%', x=0.1, y=0.9, h=0.075 }
     val r = @{ '%', x=0.9, y=0.9, h=0.075 }
     every :draw {
-        pico.zet.color.draw "white"
+        pico.zet.pencil @{ color="white" }
         pico.output.draw.text(points.L, l)
         pico.output.draw.text(points.R, r)
     }
@@ -58,7 +58,7 @@ loop {
             watching @.500 {
                 val p = @{ '%', x=0.5, y=0.5, h=0.075 }
                 every :draw {
-                    pico.zet.color.draw "white"
+                    pico.zet.pencil @{ color="white" }
                     pico.output.draw.text("= PRESS ENTER TO START =", p)
                 }
             }
