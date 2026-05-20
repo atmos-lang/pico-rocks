@@ -11,13 +11,13 @@ Built with [Atmos][atmos] and [atmos-env-pico][env-pico].
 
 ```
 sudo luarocks --lua-version=5.4 install atmos-lang 0.6
-sudo luarocks --lua-version=5.4 install atmos-env-pico 0.1
+sudo luarocks --lua-version=5.4 install atmos-env-pico 0.2
 ```
 
 # Run
 
 ```
-git checkout v0.6
+git checkout v0.7
 atmos main.atm
 ```
 
