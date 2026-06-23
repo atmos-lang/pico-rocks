@@ -1,7 +1,7 @@
 val SHIP_FRAMES   = 4
 val SHIP_ACC_DIV  = 10
-val SHIP_VEL_MAX  = @{ '%', x=0.4, y=0.4 }
-val SHOT_COLOR    = @{ r=0xFF, g=0xFF, b=0x88 }
+val SHIP_VEL_MAX  = [ '%', x=0.4, y=0.4 ]
+val SHOT_COLOR    = [ r=0xFF, g=0xFF, b=0x88 ]
 val METEOR_FRAMES = 6
 val METEOR_AWAIT  = 5000
 
@@ -21,10 +21,10 @@ func random_signal () {
 ;;  * updates rect every 'step' frame
 ;;  * terminates when rect leaves the screen
 
-func Move_T (rect, vel) {
+task Move_T (rect, vel) {
     watching until out_of_screen {
-        every _,ms in :clock {
-            val dt = ms / 1000
+        loop us on :clock {
+            val dt = us / 1000000
             set rect.x = rect.x + (vel.x * dt)
             set rect.y = rect.y + (vel.y * dt)
         }
@@ -45,10 +45,10 @@ val meteors = pico.layer.images (
     nil,
     "meteor",
     "imgs/meteor.gif",
-    @{'#', w=METEOR_FRAMES, h=1}
+    ['#', w=METEOR_FRAMES, h=1]
 )
 
-func Meteor () {
+task Meteor () {
     val y_sig = random_signal()
 
     val vx = (math.random()/5) * random_signal()
@@ -56,89 +56,89 @@ func Meteor () {
 
     var frame = 1
 
-    val rect = @{ '%', x=x, y=y, w=0.075, h=0.075 } where {
+    val rect = [ '%', x=x, y=y, w=0.075, h=0.075 ] where {
         x = math.random()
         y = if y_sig==1 => 0 => 1
     }
-    set pub = @{
+    set pub = [
         tag  = :M,
         rect = rect,
-    }
+    ]
 
     par :any {
         val dt = math.random(1, METEOR_AWAIT)
-        await @.dt
+        await (dt * 1ms)
         par :any {
-            await Move_T(rect, @{x=vx,y=vy})
+            await Move_T(rect, [x=vx,y=vy])
         } with {
             await :collided
             pico.output.sound "snds/meteor.wav"
         }
     } with {
-        every :draw {
-            pico.output.draw.layer(meteors[frame], rect)
+        loop on :draw {
+            pico.output.draw.layer(meteors@frame, rect)
         }
     } with {
         val v = ((vx->math.pow(2)) + (vy->math.pow(2))) --> math.pow(1/2)
         var x = 0
-        every _,ms in :clock {
-            set x = x + (v * ms)
+        loop us on :clock {
+            set x = x + (v * (us/1000))
             set frame = ((x//50) % METEOR_FRAMES) + 1
         }
     }
 }
 
-func Shot (V, pos, vy) {
+task Shot (V, pos, vy) {
     pico.output.sound "snds/shot.wav"
-    val rect = @{ '%', x=pos.x, y=pos.y, w=0.02, h=0.01 }
-    set pub = @{
+    val rect = [ '%', x=pos.x, y=pos.y, w=0.02, h=0.01 ]
+    set pub = [
         tag  = V.tag,
         rect = rect,
-    }
+    ]
     par :any {
         await :collided
     } with {
-        await Move_T(rect, @{x=V.x*0.33, y=vy})
+        await Move_T(rect, [x=V.x*0.33, y=vy])
     } with {
-        every :draw {
-            pico.zet.pencil @{ color=SHOT_COLOR }
+        loop on :draw {
+            pico.zet.pencil [ color=SHOT_COLOR ]
             pico.output.draw.rect(rect)
         }
     }
 }
 
-val ships = @{
-    ["imgs/ship-L.gif"] = pico.layer.images (
+val ships = [
+    @("imgs/ship-L.gif") = pico.layer.images (
         nil,
         "imgs/ship-L.gif",
         "imgs/ship-L.gif",
-        @{'#', w=1, h=SHIP_FRAMES}
+        ['#', w=1, h=SHIP_FRAMES]
     ),
-    ["imgs/ship-R.gif"] = pico.layer.images (
+    @("imgs/ship-R.gif") = pico.layer.images (
         nil,
         "imgs/ship-R.gif",
         "imgs/ship-R.gif",
-        @{'#', w=1, h=SHIP_FRAMES}
+        ['#', w=1, h=SHIP_FRAMES]
     ),
-}
+]
 
-func Ship (V, shots) {
-    val frames = ships[V.img]
-    val vel = @{x=0,y=0}
-    val rect = @{ '%', x=V.pos, y=0.5, w=0.075, h=0.075 }
+task Ship (V, shots) {
+    val frames = ships@(V.img)
+    val vel = [x=0,y=0]
+    val rect = [ '%', x=V.pos, y=0.5, w=0.075, h=0.075 ]
 
-    set pub = @{
+    set pub = [
         tag  = V.tag,
         rect = rect,
-    }
+    ]
 
-    var acc = @{x=0,y=0}
+    var acc = [x=0,y=0]
     var key
     spawn {
         par {
-            every it in :key.dn {
+            loop it on :key.dn {
                 match it.key {
-                    V.ctl.shot   => spawn [shots] Shot(V.shot, @{'%',x=rect.x,y=rect.y}, vel.y)
+                    V.ctl.shot   => spawn @shots Shot(V.shot, ['%',x=rect.x,y=rect.y], vel.y)
                     V.ctl.move.l => set acc.x = -0.1
                     V.ctl.move.r => set acc.x =  0.1
                     V.ctl.move.u => set acc.y = -0.1
@@ -147,16 +147,16 @@ func Ship (V, shots) {
                 set key = it.key
             }
         } with {
-            every :key.up {
+            loop on :key.up {
                 set key = nil
-                set acc = @{x=0,y=0}
+                set acc = [x=0,y=0]
             }
         }
     }
 
     watching :collided {
         par {
-            every :draw {
+            loop on :draw {
                 val frame = match key {
                     V.ctl.move.l => V.ctl.frame.l
                     V.ctl.move.r => V.ctl.frame.r
@@ -164,11 +164,11 @@ func Ship (V, shots) {
                     V.ctl.move.d => V.ctl.frame.d
                     else => 0
                 }
-                pico.output.draw.layer(frames[frame+1], rect)
+                pico.output.draw.layer(frames@(frame+1), rect)
             }
         } with {
-            every _,ms in :clock {
-                val dt = ms / 1000
+            loop us on :clock {
+                val dt = us / 1000000
                 set vel.x = between(-SHIP_VEL_MAX.x, vel.x+(acc.x*dt), SHIP_VEL_MAX.x)
                 set vel.y = between(-SHIP_VEL_MAX.y, vel.y+(acc.y*dt), SHIP_VEL_MAX.y)
 
@@ -180,17 +180,19 @@ func Ship (V, shots) {
         }
     }
 
-    watching @.100 {
+    watching 100ms {
         var d = 0
         par {
-            every _,ms in :clock {
-                set d = d + (ms/500)
+            loop us on :clock {
+                set d = d + ((us/1000)/500)
             }
         } with {
-            every :draw {
-                pico.zet.pencil @{ color="red" }
-                pico.output.draw.oval @{ '%', x=rect.x, y=rect.y, w=d, h=d }
+            loop on :draw {
+                pico.zet.pencil [ color="red" ]
+                pico.output.draw.oval [ '%', x=rect.x, y=rect.y, w=d, h=d ]
             }
         }
     }
+
+    pub.tag
 }

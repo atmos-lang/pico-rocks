@@ -3,8 +3,8 @@ set pico = require "pico"
 
 set W, H = (640, 480)
 
-pico.zet.window @{ title="The Battle of Ships" }
-pico.zet.dim @{'!', w=640, h=480}
+pico.zet.window [ title="The Battle of Ships" ]
+pico.zet.dim ['!', w=640, h=480]
 
 math.randomseed()
 
@@ -15,13 +15,13 @@ spawn {    ;; BACKGROUND
     ;; This task is the first to spawn, which makes the background image to
     ;; always be rendered first.
     ;;;
-    val p = @{ '%', x=0.5, y=0.5 }
-    every :draw {
+    val p = [ '%', x=0.5, y=0.5 ]
+    loop on :draw {
         pico.output.draw.image("imgs/bg.png", p)
     }
 }
 
-val points = @{ L=0, R=0 }
+val points = [ L=0, R=0 ]
 
 spawn {    ;; POINTS
     ;;;
@@ -31,10 +31,10 @@ spawn {    ;; POINTS
     ;; Since points must outlive each individual battle, we spawn them here,
     ;; outside the main game loop.
     ;;;
-    val l = @{ '%', x=0.1, y=0.9, h=0.075 }
-    val r = @{ '%', x=0.9, y=0.9, h=0.075 }
-    every :draw {
-        pico.zet.pencil @{ color="white" }
+    val l = [ '%', x=0.1, y=0.9, h=0.075 ]
+    val r = [ '%', x=0.9, y=0.9, h=0.075 ]
+    loop on :draw {
+        pico.zet.pencil [ color="white" ]
         pico.output.draw.text(points.L, l)
         pico.output.draw.text(points.R, r)
     }
@@ -49,21 +49,21 @@ spawn {    ;; POINTS
 ;;;
 loop {
     ;; ENTER-TO-START
-    watching :key.dn, :Return {
+    watching :key.dn [key=:Return] {
         ;;;
         ;; Spawns the blinking message, and awaits a :Return press.
         ;;;
         loop {
             ;; 500ms on
-            watching @.500 {
-                val p = @{ '%', x=0.5, y=0.5, h=0.075 }
-                every :draw {
-                    pico.zet.pencil @{ color="white" }
+            watching 500ms {
+                val p = [ '%', x=0.5, y=0.5, h=0.075 ]
+                loop on :draw {
+                    pico.zet.pencil [ color="white" ]
                     pico.output.draw.text("= PRESS ENTER TO START =", p)
                 }
             }
             ;; 500ms off
-            await @.500
+            await 500ms
         }
     }
 
@@ -79,15 +79,15 @@ loop {
     ;;  * awaits 'P' to toggle battle on
     spawn {
         loop {
-            await(:key.dn, 'P')
+            await(:key.dn [key='P'])
             toggle battle(false)
             spawn {
-                val p = @{ '%', x=0.5, y=0.5 }
-                every :draw {
+                val p = [ '%', x=0.5, y=0.5 ]
+                loop on :draw {
                     pico.output.draw.image("imgs/pause.png", p)
                 }
             }
-            await(:key.dn, 'P')
+            await(:key.dn [key='P'])
             toggle battle(true)
         }
     }
@@ -97,8 +97,8 @@ loop {
     ;;  * increments winner points
     ;;  * awaits 1s before next battle
     val winner = await(battle)
-    set points[winner] = points[winner] + 1
-    await @1
+    set points@winner = points@winner + 1
+    await 1s
 
     ;;;
     ;; Restarts the main loop.
