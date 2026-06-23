@@ -22,7 +22,7 @@ func random_signal () {
 ;;  * terminates when rect leaves the screen
 
 func Move_T (rect, vel) {
-    watching out_of_screen {
+    watching until out_of_screen {
         every _,ms in :clock {
             val dt = ms / 1000
             set rect.x = rect.x + (vel.x * dt)
