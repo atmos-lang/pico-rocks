@@ -3,8 +3,8 @@ set pico = require "pico"
 
 set W, H = (640, 480)
 
-pico.zet.window [ title="The Battle of Ships" ]
-pico.zet.dim ['!', w=640, h=480]
+pico.set.window [ title="The Battle of Ships" ]
+pico.set.dim ['!', w=640, h=480]
 
 math.randomseed()
 
@@ -34,7 +34,7 @@ spawn {    ;; POINTS
     val l = [ '%', x=0.1, y=0.9, h=0.075 ]
     val r = [ '%', x=0.9, y=0.9, h=0.075 ]
     loop on :draw {
-        pico.zet.pencil [ color="white" ]
+        pico.set.pencil [ color="white" ]
         pico.output.draw.text(points.L, l)
         pico.output.draw.text(points.R, r)
     }
@@ -58,7 +58,7 @@ loop {
             watching 500ms {
                 val p = [ '%', x=0.5, y=0.5, h=0.075 ]
                 loop on :draw {
-                    pico.zet.pencil [ color="white" ]
+                    pico.set.pencil [ color="white" ]
                     pico.output.draw.text("= PRESS ENTER TO START =", p)
                 }
             }
